@@ -34,3 +34,7 @@ This is an early security foundation, not an audited security product. Event ret
 
 ## Sentinel v0.5.1
 Device registration/reconnection now emits an identity-scoped security event so the Sentinel log is populated after a successful reconnect.
+
+
+## Sentinel v0.5.2 source-IP handling
+The backend avoids recording its loopback/proxy socket address as the visitor. It accepts a single valid `X-Forwarded-For` value only; missing, malformed, or multi-hop values are stored as `unavailable`. It does not trust `X-Real-IP` or guess through a proxy chain. Confirm Render's actual header behaviour after deployment; this field is network metadata, not a person's identity or exact location.

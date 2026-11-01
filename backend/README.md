@@ -37,3 +37,7 @@ This is an early backend foundation, not a completed or independently audited se
 
 ### v0.5.1 Sentinel event coverage
 Device registration and reconnection now create a `device_registered_or_reconnected` event associated with the registered AEGIS identity. This ensures a newly connected device can produce a visible Sentinel event without requiring a failed-login test. Existing identity keys and device records are unchanged.
+
+
+### v0.5.2 source-IP attribution
+The backend no longer records its local socket/proxy address as the visitor IP. It accepts `X-Forwarded-For` only when exactly one syntactically valid IP is present; when the header is absent, invalid, or contains a multi-hop chain, the event stores `unavailable` rather than guessing. It deliberately does not trust `X-Real-IP`. This is conservative attribution, not personal identification. Verify the exact header behaviour in the deployed Render environment before treating recorded IPs as authoritative.

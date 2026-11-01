@@ -1,5 +1,6 @@
 import http from 'node:http';
 import crypto from 'node:crypto';
+import { isIP } from 'node:net';
 import pg from 'pg';
 const { Pool } = pg;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined, max: 5 });
@@ -23,7 +24,18 @@ function useChallenge(id,key,signature) { const item=challenges.get(id); challen
 function tokenHash(token) { return crypto.createHash('sha256').update(token).digest('hex'); }
 async function auth(req) { const value=req.headers.authorization||''; if(!value.startsWith('Bearer ')) return null; const hash=tokenHash(value.slice(7)); const result=await pool.query(`SELECT d.device_id,d.identity_code,d.label,d.created_at,d.last_seen_at FROM aegis_sessions s JOIN aegis_devices d ON d.device_id=s.device_id WHERE s.token_hash=$1 AND s.expires_at>NOW() AND d.revoked_at IS NULL`,[hash]); if(!result.rowCount) return null; await pool.query('UPDATE aegis_devices SET last_seen_at=NOW() WHERE device_id=$1',[result.rows[0].device_id]); return result.rows[0]; }
 async function issueSession(deviceId) { const token=crypto.randomBytes(32).toString('base64url'); await pool.query('INSERT INTO aegis_sessions(token_hash,device_id,expires_at) VALUES($1,$2,NOW()+($3 || \' days\')::interval)',[tokenHash(token),deviceId,String(TOKEN_TTL_DAYS)]); return token; }
-async function recordEvent(req,type,identityCode=null,details={}) { const ip=(req.socket.remoteAddress||'unknown').replace(/^::ffff:/,''); const ua=String(req.headers['user-agent']||'').slice(0,180); await pool.query('INSERT INTO aegis_security_events(event_id,identity_code,event_type,source_ip,user_agent,details,created_at) VALUES($1,$2,$3,$4,$5,$6,NOW())',[crypto.randomUUID(),identityCode,type,ip,ua,JSON.stringify(details)]); }
+function getObservedSourceIp(req) {
+ // Render terminates public HTTPS before forwarding to this Node process. The
+ // socket address is therefore often a loopback/proxy address, not the visitor.
+ // Accept X-Forwarded-For only when it contains exactly one valid IP; if a chain
+ // is present, refuse to guess which hop is the client. Never trust x-real-ip.
+ const raw=String(req.headers['x-forwarded-for']||'').trim();
+ if(!raw || raw.includes(',')) return 'unavailable';
+ const candidate=raw.trim();
+ if(!isIP(candidate) || candidate==='127.0.0.1' || candidate==='::1' || candidate==='0.0.0.0' || candidate==='::') return 'unavailable';
+ return candidate.replace(/^::ffff:/,'');
+}
+async function recordEvent(req,type,identityCode=null,details={}) { const ip=getObservedSourceIp(req); const ua=String(req.headers['user-agent']||'').slice(0,180); await pool.query('INSERT INTO aegis_security_events(event_id,identity_code,event_type,source_ip,user_agent,details,created_at) VALUES($1,$2,$3,$4,$5,$6,NOW())',[crypto.randomUUID(),identityCode,type,ip,ua,JSON.stringify(details)]); }
 async function init() { if(!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required'); await pool.query(`CREATE TABLE IF NOT EXISTS aegis_devices(device_id UUID PRIMARY KEY,identity_code TEXT NOT NULL,public_key BYTEA NOT NULL UNIQUE,label TEXT NOT NULL DEFAULT '',created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),revoked_at TIMESTAMPTZ); CREATE INDEX IF NOT EXISTS aegis_devices_identity_idx ON aegis_devices(identity_code); CREATE TABLE IF NOT EXISTS aegis_sessions(token_hash TEXT PRIMARY KEY,device_id UUID NOT NULL REFERENCES aegis_devices(device_id),created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),expires_at TIMESTAMPTZ NOT NULL); CREATE INDEX IF NOT EXISTS aegis_sessions_device_idx ON aegis_sessions(device_id); CREATE TABLE IF NOT EXISTS aegis_security_events(event_id UUID PRIMARY KEY,identity_code TEXT,event_type TEXT NOT NULL,source_ip TEXT NOT NULL,user_agent TEXT NOT NULL DEFAULT '',details JSONB NOT NULL DEFAULT '{}'::jsonb,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()); CREATE INDEX IF NOT EXISTS aegis_security_events_identity_time_idx ON aegis_security_events(identity_code,created_at DESC);`); }
 function rateLimit(req) { const ip=req.socket.remoteAddress||'unknown',now=Date.now(),v=limits.get(ip)||{start:now,count:0}; if(now-v.start>60000){v.start=now;v.count=0;} v.count++; limits.set(ip,v); return v.count<=60; }
 async function route(req,res) {
@@ -31,7 +43,7 @@ async function route(req,res) {
  if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
  if(!rateLimit(req)) return send(res,429,{error:'Rate limit exceeded'});
  const url=new URL(req.url,'http://localhost');
- if(req.method==='GET'&&url.pathname==='/health'){try{await pool.query('SELECT 1');return send(res,200,{ok:true,service:'aegis-backend',version:'0.5.1',database:'connected'});}catch{return send(res,503,{ok:false,database:'unavailable'});}}
+ if(req.method==='GET'&&url.pathname==='/health'){try{await pool.query('SELECT 1');return send(res,200,{ok:true,service:'aegis-backend',version:'0.5.2',database:'connected'});}catch{return send(res,503,{ok:false,database:'unavailable'});}}
  try {
   if(req.method==='POST'&&url.pathname==='/v1/challenges'){const d=await readBody(req);if(!validPublicKey(d.publicKey))return send(res,400,{error:'Valid uncompressed P-256 public key required'});return send(res,200,newChallenge(d.publicKey));}
   if(req.method==='POST'&&url.pathname==='/v1/devices/register'){
