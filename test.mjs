@@ -33,8 +33,8 @@ console.log('PASS: PWA manifest, service worker, P-256 key generation, non-extra
 
 assert.match(js, /navButton\('sentinel','Sentinel','shield'\)/);
 assert.match(js, /function sentinelPage\(/);
-assert.match(js, /register\('\/sw\.js\?v=0\.5\.3'/);
-assert.match(sw, /aegis-shell-v053-sentinel/);
+assert.match(js, /register\('\/sw\.js\?v=0\.5\.6'/);
+assert.match(sw, /aegis-shell-v056-sentinel/);
 assert.match(sw, /skipWaiting/);
 assert.match(sw, /clients\.claim/);
-console.log('PASS: Sentinel navigation, security-event page and v0.5.3 cache refresh checks.');
+console.log('PASS: Sentinel navigation, security-event page and v0.5.6 cache refresh checks.');

@@ -1,6 +1,6 @@
 {
   "name": "aegis-private-network",
-  "version": "0.5.3",
+  "version": "0.5.6",
   "private": true,
   "type": "module",
   "scripts": {

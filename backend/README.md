@@ -41,3 +41,10 @@ Device registration and reconnection now create a `device_registered_or_reconnec
 
 ### v0.5.2 source-IP attribution
 The backend no longer records its local socket/proxy address as the visitor IP. It accepts `X-Forwarded-For` only when exactly one syntactically valid IP is present; when the header is absent, invalid, or contains a multi-hop chain, the event stores `unavailable` rather than guessing. It deliberately does not trust `X-Real-IP`. This is conservative attribution, not personal identification. Verify the exact header behaviour in the deployed Render environment before treating recorded IPs as authoritative.
+
+
+## Sentinel authentication-event attribution (v0.5.3)
+
+Rejected registration/authentication proofs and denied authentication attempts are associated with an existing AEGIS identity only when the submitted public key is already present in `aegis_devices`. Unknown public keys remain unassigned; Sentinel does not guess an identity. Event records contain event type, server-observed source metadata, a limited user-agent string and non-secret reason/device metadata. Passwords, private keys, bearer tokens and message contents are not recorded.
+
+The security-event endpoint requires a valid bearer session and returns only events for that session's identity. Revoking a device marks it revoked and deletes all sessions for that device. A revoked session is rejected by subsequent authenticated requests. The current automated tests exercise cryptographic proof and event-attribution contracts; full HTTP/database integration tests still require a dedicated test PostgreSQL database and must be run before production security sign-off.

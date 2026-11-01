@@ -38,3 +38,10 @@ Device registration/reconnection now emits an identity-scoped security event so 
 
 ## Sentinel v0.5.2 source-IP handling
 The backend avoids recording its loopback/proxy socket address as the visitor. It accepts a single valid `X-Forwarded-For` value only; missing, malformed, or multi-hop values are stored as `unavailable`. It does not trust `X-Real-IP` or guess through a proxy chain. Confirm Render's actual header behaviour after deployment; this field is network metadata, not a person's identity or exact location.
+
+
+## AEGIS v0.5.6 Sentinel verification update
+
+This complete repository package includes the Sentinel frontend, service-worker cache refresh, backend v0.5.3, and backend event-attribution update. Rejected authentication or registration proofs are attached to an identity only when the submitted public key already exists in the device registry; unknown keys are not assigned to an identity. The authenticated events endpoint returns only events for the identity associated with the valid bearer session. Device revocation marks the device revoked and deletes its sessions.
+
+Automated checks cover the PWA shell, local key operations, signature verification/rejection, known-device attribution contract, and authenticated-identity guard contract. The backend requires PostgreSQL and live HTTP/database integration tests must still be performed on a separate test database before any security audit or production-readiness claim. No automatic security-event expiry policy is included.

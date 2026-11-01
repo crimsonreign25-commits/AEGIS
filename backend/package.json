@@ -1,6 +1,6 @@
 {
   "name": "aegis-backend",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "private": true,
   "type": "module",
   "scripts": {"start": "node server.mjs", "test": "node test.mjs"},

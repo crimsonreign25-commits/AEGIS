@@ -1,4 +1,4 @@
-const CACHE = 'aegis-shell-v053-sentinel';
+const CACHE = 'aegis-shell-v056-sentinel';
 const CORE = ['/', '/index.html', '/app.js', '/src/styles.css', '/manifest.webmanifest', '/public/aegis-icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
