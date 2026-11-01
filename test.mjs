@@ -30,3 +30,11 @@ const message = new TextEncoder().encode('AEGIS local identity proof test');
 const signature = await webcrypto.subtle.sign({name:'ECDSA',hash:'SHA-256'}, signing.privateKey, message);
 assert.equal(await webcrypto.subtle.verify({name:'ECDSA',hash:'SHA-256'}, signing.publicKey, signature, message), true);
 console.log('PASS: PWA manifest, service worker, P-256 key generation, non-extractable private keys, public-key fingerprint and ECDSA sign/verify checks.');
+
+assert.match(js, /navButton\('sentinel','Sentinel','shield'\)/);
+assert.match(js, /function sentinelPage\(/);
+assert.match(js, /register\('\/sw\.js\?v=0\.5\.3'/);
+assert.match(sw, /aegis-shell-v053-sentinel/);
+assert.match(sw, /skipWaiting/);
+assert.match(sw, /clients\.claim/);
+console.log('PASS: Sentinel navigation, security-event page and v0.5.3 cache refresh checks.');
