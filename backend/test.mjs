@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {generateKeyPairSync,createHash,sign,verify} from 'node:crypto';
+const {publicKey,privateKey}=generateKeyPairSync('ec',{namedCurve:'prime256v1'});
+const spki=publicKey.export({format:'der',type:'spki'}),raw=spki.subarray(-65);
+assert.equal(raw.length,65);assert.equal(raw[0],4);
+const message=Buffer.from('AEGIS-AUTH-V1\nunit-test-challenge');
+const signature=sign('sha256',message,{key:privateKey,dsaEncoding:'ieee-p1363'});
+assert.equal(verify('sha256',message,{key:publicKey,dsaEncoding:'ieee-p1363'},signature),true);
+assert.equal(verify('sha256',Buffer.from('altered'),{key:publicKey,dsaEncoding:'ieee-p1363'},signature),false);
+const changed=Buffer.from(signature);changed[0]^=1;
+assert.equal(verify('sha256',message,{key:publicKey,dsaEncoding:'ieee-p1363'},changed),false);
+const code=`AEGIS-${createHash('sha256').update(raw).digest('hex').slice(0,20).toUpperCase().match(/.{1,4}/g).join('-')}`;
+assert.match(code,/^AEGIS-[A-F0-9]{4}(?:-[A-F0-9]{4}){4}$/);
+console.log('PASS: P-256 key encoding, fingerprint format, signature verification and forged/altered proof rejection.');

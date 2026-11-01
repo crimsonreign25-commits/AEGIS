@@ -1,0 +1,8 @@
+{
+  "name": "aegis-backend",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"start": "node server.mjs", "test": "node test.mjs"},
+  "dependencies": {"pg": "^8.13.1"}
+}

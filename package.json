@@ -1,12 +1,7 @@
 {
   "name": "aegis-private-network",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "node server.mjs",
-    "build": "node build.mjs",
-    "preview": "node server.mjs dist",
-    "test": "node test.mjs"
-  }
+  "scripts": {"dev":"node server.mjs","build":"node build.mjs","preview":"node server.mjs dist","test":"node test.mjs","test:backend":"npm --prefix backend test"}
 }
