@@ -30,3 +30,7 @@ The service-worker cache is now `aegis-shell-v04`, forcing existing PWA installa
 Sentinel adds an authenticated security-event view and server-side event records for rejected proofs, denied authentication, successful authentication and device revocation. It displays server-observed network source metadata with an explicit warning that an IP address is not a person or exact location. Device revocation invalidates sessions for that device; Sentinel does not shut down the device or service.
 
 This is an early security foundation, not an audited security product. Event retention currently requires database administration; no automatic expiry policy is included yet.
+
+
+## Sentinel v0.5.1
+Device registration/reconnection now emits an identity-scoped security event so the Sentinel log is populated after a successful reconnect.

@@ -31,7 +31,7 @@ async function route(req,res) {
  if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
  if(!rateLimit(req)) return send(res,429,{error:'Rate limit exceeded'});
  const url=new URL(req.url,'http://localhost');
- if(req.method==='GET'&&url.pathname==='/health'){try{await pool.query('SELECT 1');return send(res,200,{ok:true,service:'aegis-backend',version:'0.5.0',database:'connected'});}catch{return send(res,503,{ok:false,database:'unavailable'});}}
+ if(req.method==='GET'&&url.pathname==='/health'){try{await pool.query('SELECT 1');return send(res,200,{ok:true,service:'aegis-backend',version:'0.5.1',database:'connected'});}catch{return send(res,503,{ok:false,database:'unavailable'});}}
  try {
   if(req.method==='POST'&&url.pathname==='/v1/challenges'){const d=await readBody(req);if(!validPublicKey(d.publicKey))return send(res,400,{error:'Valid uncompressed P-256 public key required'});return send(res,200,newChallenge(d.publicKey));}
   if(req.method==='POST'&&url.pathname==='/v1/devices/register'){
@@ -39,7 +39,7 @@ async function route(req,res) {
    if(!useChallenge(d.challengeId,d.publicKey,d.signature)){await recordEvent(req,'registration_proof_rejected',null,{reason:'invalid_or_expired_proof'});return send(res,401,{error:'Challenge proof invalid, expired or already used'});}
    const raw=decode(d.publicKey),code=fingerprint(raw),label=typeof d.label==='string'?d.label.trim().slice(0,48):'';
    const result=await pool.query(`INSERT INTO aegis_devices(device_id,identity_code,public_key,label) VALUES($1,$2,$3,$4) ON CONFLICT(public_key) DO UPDATE SET last_seen_at=NOW(),revoked_at=NULL,label=EXCLUDED.label RETURNING device_id,identity_code,label,created_at,last_seen_at`,[crypto.randomUUID(),code,raw,label]);
-   const token=await issueSession(result.rows[0].device_id);return send(res,201,{device:result.rows[0],token,tokenExpiresInDays:TOKEN_TTL_DAYS});
+   const token=await issueSession(result.rows[0].device_id);await recordEvent(req,'device_registered_or_reconnected',result.rows[0].identity_code,{deviceId:result.rows[0].device_id});return send(res,201,{device:result.rows[0],token,tokenExpiresInDays:TOKEN_TTL_DAYS});
   }
   if(req.method==='POST'&&url.pathname==='/v1/devices/authenticate'){
    const d=await readBody(req);if(!validPublicKey(d.publicKey)||typeof d.challengeId!=='string'||typeof d.signature!=='string')return send(res,400,{error:'Invalid authentication proof'});

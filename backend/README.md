@@ -33,3 +33,7 @@ This is an early backend foundation, not a completed or independently audited se
 - IP addresses may represent shared carrier, school, workplace or household gateways; they do not identify a person or exact location. No automatic IP blocking is performed.
 - Events are retained in PostgreSQL until manually managed; this release does not yet implement automatic retention expiry. Restrict database access and configure an appropriate retention policy before production use.
 - Sentinel revokes device sessions; it does not shut down the phone or backend process.
+
+
+### v0.5.1 Sentinel event coverage
+Device registration and reconnection now create a `device_registered_or_reconnected` event associated with the registered AEGIS identity. This ensures a newly connected device can produce a visible Sentinel event without requiring a failed-login test. Existing identity keys and device records are unchanged.
