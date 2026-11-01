@@ -1,0 +1,12 @@
+{
+  "name": "AEGIS Private Network",
+  "short_name": "AEGIS",
+  "description": "One network. Global access. Private by design.",
+  "theme_color": "#07100e",
+  "background_color": "#07100e",
+  "display": "standalone",
+  "orientation": "any",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [{"src":"/public/aegis-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
