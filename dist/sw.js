@@ -1,4 +1,4 @@
-const CACHE = 'aegis-shell-v01';
+const CACHE = 'aegis-shell-v02';
 const CORE = ['/', '/index.html', '/app.js', '/src/styles.css', '/manifest.webmanifest', '/public/aegis-icon.svg'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE))));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))));

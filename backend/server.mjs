@@ -10,7 +10,7 @@ const limits = new Map();
 const MAX_BODY = 16 * 1024;
 const TOKEN_TTL_DAYS = 30;
 const send = (res, status, value) => { res.writeHead(status, {'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Access-Control-Allow-Origin': ALLOWED_ORIGIN || 'null','Vary':'Origin'}); res.end(JSON.stringify(value)); };
-function cors(req,res) { const origin=req.headers.origin; if (ALLOWED_ORIGIN && origin && origin!==ALLOWED_ORIGIN) return false; res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS'); res.setHeader('Access-Control-Allow-Headers','Content-Type,Authorization'); res.setHeader('Access-Control-Max-Age','600'); return true; }
+function cors(req,res) { const origin=req.headers.origin; if (ALLOWED_ORIGIN && origin && origin!==ALLOWED_ORIGIN) return false; if (ALLOWED_ORIGIN && origin===ALLOWED_ORIGIN) res.setHeader('Access-Control-Allow-Origin',ALLOWED_ORIGIN); res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS'); res.setHeader('Access-Control-Allow-Headers','Content-Type,Authorization'); res.setHeader('Access-Control-Max-Age','600'); return true; }
 async function readBody(req) { let raw=''; for await (const chunk of req) { raw+=chunk; if (Buffer.byteLength(raw)>MAX_BODY) throw Object.assign(new Error('Request too large'),{status:413}); } try { return JSON.parse(raw||'{}'); } catch { throw Object.assign(new Error('Invalid JSON'),{status:400}); } }
 const decode = value => Buffer.from(value,'base64');
 const encode = value => Buffer.from(value).toString('base64');
