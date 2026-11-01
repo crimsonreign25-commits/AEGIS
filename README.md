@@ -24,3 +24,9 @@ This remains an early foundation, not a complete audited secure communications p
 
 ## v0.4 deployment correction
 The service-worker cache is now `aegis-shell-v04`, forcing existing PWA installations to fetch the updated frontend instead of retaining the old cached app shell. The local IndexedDB identity schema and stored CryptoKey records are unchanged. Backend health reports version `0.4.0`.
+
+
+## AEGIS Sentinel v0.5
+Sentinel adds an authenticated security-event view and server-side event records for rejected proofs, denied authentication, successful authentication and device revocation. It displays server-observed network source metadata with an explicit warning that an IP address is not a person or exact location. Device revocation invalidates sessions for that device; Sentinel does not shut down the device or service.
+
+This is an early security foundation, not an audited security product. Event retention currently requires database administration; no automatic expiry policy is included yet.

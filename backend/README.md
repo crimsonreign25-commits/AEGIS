@@ -24,3 +24,12 @@ The client signs the exact challenge message with ECDSA P-256/SHA-256. Signature
 
 ## Security status / limitations
 This is an early backend foundation, not a completed or independently audited secure communications platform. Challenges and in-memory rate limits are process-local and reset on restart; run a single instance for now. There is no multi-factor authentication, account recovery, end-to-end messaging, VPN, or independent security audit. Revoke access to a lost device by revoking its device record. Use HTTPS only, protect the database URL, and do not expose private keys.
+
+
+## AEGIS Sentinel v0.5
+- `GET /v1/security/events` — authenticated device session required; returns up to 100 recent events for the same AEGIS identity.
+- Records rejected authentication/registration proofs, denied authentication for unknown or revoked devices, successful device authentication, and device revocation.
+- Event records include server-observed remote IP, a shortened user-agent string, timestamp, event type and limited non-secret details. They never store bearer tokens, private keys, passwords or message contents.
+- IP addresses may represent shared carrier, school, workplace or household gateways; they do not identify a person or exact location. No automatic IP blocking is performed.
+- Events are retained in PostgreSQL until manually managed; this release does not yet implement automatic retention expiry. Restrict database access and configure an appropriate retention policy before production use.
+- Sentinel revokes device sessions; it does not shut down the phone or backend process.
