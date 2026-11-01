@@ -1,4 +1,4 @@
-# AEGIS v0.3 — Connected device management
+# AEGIS v0.4 — Connected device management
 
 This release preserves the original local identity keys and adds a browser connection to the separately deployed AEGIS backend.
 
@@ -20,3 +20,7 @@ From `backend/`, run `npm test`. The test checks P-256 key format, fingerprint f
 
 ## Security limitations
 This remains an early foundation, not a complete audited secure communications product. The current browser's private keys are not hardware-backed. Clearing browser data or losing the browser profile may permanently lose this identity. Backend challenges and in-memory rate limits reset on restart. Device records are grouped by the same signing-key fingerprint; this does not yet provide secure cross-device key transfer, recovery, end-to-end messaging, VPN, or multi-factor authentication. Use HTTPS and protect the database URL.
+
+
+## v0.4 deployment correction
+The service-worker cache is now `aegis-shell-v04`, forcing existing PWA installations to fetch the updated frontend instead of retaining the old cached app shell. The local IndexedDB identity schema and stored CryptoKey records are unchanged. Backend health reports version `0.4.0`.

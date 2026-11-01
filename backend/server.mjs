@@ -30,7 +30,7 @@ async function route(req,res) {
  if(req.method==='OPTIONS'){res.writeHead(204);return res.end();}
  if(!rateLimit(req)) return send(res,429,{error:'Rate limit exceeded'});
  const url=new URL(req.url,'http://localhost');
- if(req.method==='GET'&&url.pathname==='/health'){try{await pool.query('SELECT 1');return send(res,200,{ok:true,service:'aegis-backend',version:'0.2.0',database:'connected'});}catch{return send(res,503,{ok:false,database:'unavailable'});}}
+ if(req.method==='GET'&&url.pathname==='/health'){try{await pool.query('SELECT 1');return send(res,200,{ok:true,service:'aegis-backend',version:'0.4.0',database:'connected'});}catch{return send(res,503,{ok:false,database:'unavailable'});}}
  try {
   if(req.method==='POST'&&url.pathname==='/v1/challenges'){const d=await readBody(req);if(!validPublicKey(d.publicKey))return send(res,400,{error:'Valid uncompressed P-256 public key required'});return send(res,200,newChallenge(d.publicKey));}
   if(req.method==='POST'&&url.pathname==='/v1/devices/register'){
