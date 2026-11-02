@@ -104,7 +104,7 @@ private object AndroidEnrollment {
     private const val KEY_ALIAS = "aegis_android_identity_v1"
     private const val PREFS = "aegis_secure_session"
 
-    fun enroll(base: String, label: String): Pair<String, String> {
+    fun enroll(context: Context, base: String, label: String): Pair<String, String> {
         require(base.startsWith("https://")) { "HTTPS is required." }
         val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         if (!keyStore.containsAlias(KEY_ALIAS)) {
