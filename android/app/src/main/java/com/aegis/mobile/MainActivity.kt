@@ -30,6 +30,8 @@ import java.security.KeyStore
 import java.security.Signature
 import java.security.spec.ECGenParameterSpec
 import android.util.Base64
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 
 private val Night = Color(0xFF070B0A)
 private val Panel = Color(0xFF101916)
@@ -109,7 +111,14 @@ private object AndroidEnrollment {
         val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         if (!keyStore.containsAlias(KEY_ALIAS)) {
             val generator = KeyPairGenerator.getInstance("EC", "AndroidKeyStore")
-            generator.initialize(ECGenParameterSpec("secp256r1"))
+            val keySpec = KeyGenParameterSpec.Builder(
+                KEY_ALIAS,
+                KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY
+            )
+                .setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
+                .setDigests(KeyProperties.DIGEST_SHA256)
+                .build()
+            generator.initialize(keySpec)
             generator.generateKeyPair()
         }
         val publicEncoded = keyStore.getCertificate(KEY_ALIAS).publicKey.encoded
