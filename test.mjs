@@ -33,8 +33,58 @@ console.log('PASS: PWA manifest, service worker, P-256 key generation, non-extra
 
 assert.match(js, /navButton\('sentinel','Sentinel','shield'\)/);
 assert.match(js, /function sentinelPage\(/);
-assert.match(js, /register\('\/sw\.js\?v=0\.5\.6'/);
-assert.match(sw, /aegis-shell-v056-sentinel/);
+assert.match(js, /register\('\/sw\.js\?v=0\.9\.2'/);
+assert.match(sw, /aegis-shell-v092-secure-share/);
 assert.match(sw, /skipWaiting/);
 assert.match(sw, /clients\.claim/);
-console.log('PASS: Sentinel navigation, security-event page and v0.5.6 cache refresh checks.');
+assert.match(js, /cannot restore access by simply registering again/);
+console.log('PASS: Sentinel navigation, security-event page and v0.9.0 cache refresh checks.');
+
+for (const section of ['messenger','rooms','media','vault','vpn','workhub']) assert.ok(js.includes(`'${section}'`));
+assert.match(js, /camera-preview/);
+assert.match(js, /video-mask/);
+console.log('PASS: integrated module navigation and local media privacy preview checks.');
+
+assert.match(js, /function retentionSettings\(scope\)/);
+assert.match(js, /Delete when I leave/);
+assert.match(js, /Keep for a set duration/);
+assert.match(js, /aegis-retention-\$\{scope\}/);
+assert.match(js, /save-retention/);
+assert.match(js, /This setting controls your copy only/);
+console.log('PASS: per-chat and per-room retention preferences, duration selection, local persistence and copy-scope disclosure.');
+
+
+import { deriveLocalVaultKey, encryptRecord, decryptRecord, encryptBytes, decryptBytes } from './vault-store.mjs';
+const vaultIdentity = await (async () => {
+  const pair = await webcrypto.subtle.generateKey({name:'ECDH',namedCurve:'P-256'}, false, ['deriveBits','deriveKey']);
+  return { agreementPrivateKey: pair.privateKey, agreementPublicKey: pair.publicKey, identityCode: 'AEGIS-TEST-VAULT' };
+})();
+const vaultKey = await deriveLocalVaultKey(vaultIdentity, webcrypto.subtle);
+assert.equal(vaultKey.extractable, false);
+const sampleRecord = { title: 'Private work note', body: 'Encrypted test content' };
+const encryptedRecord = await encryptRecord(vaultKey, sampleRecord, webcrypto.subtle);
+assert.notDeepEqual(encryptedRecord.ciphertext, Array.from(new TextEncoder().encode(JSON.stringify(sampleRecord))));
+assert.deepEqual(await decryptRecord(vaultKey, encryptedRecord, webcrypto.subtle), sampleRecord);
+const sampleBytes = new Uint8Array([0,1,2,3,254,255]);
+const encryptedBytes = await encryptBytes(vaultKey, sampleBytes, webcrypto.subtle);
+assert.deepEqual(Array.from(new Uint8Array(await decryptBytes(vaultKey, encryptedBytes, webcrypto.subtle))), Array.from(sampleBytes));
+assert.ok(encryptedBytes.ciphertext instanceof ArrayBuffer);
+const tampered = {...encryptedRecord, ciphertext:[...encryptedRecord.ciphertext]};
+tampered.ciphertext[0] ^= 1;
+await assert.rejects(() => decryptRecord(vaultKey, tampered, webcrypto.subtle));
+assert.match(js, /Encrypt and save file/);
+assert.match(js, /Encrypt and save note/);
+assert.match(js, /Add encrypted task/);
+assert.match(js, /task-toggle/);
+assert.match(js, /MAX_FILE_BYTES/);
+assert.match(sw, /vault-store\.mjs/);
+console.log('PASS: identity-bound non-extractable AES-GCM key derivation, encrypted notes, binary file encryption/decryption and tamper rejection.');
+const secureShareSource = await readFile(new URL('./app.js', import.meta.url), 'utf8');
+assert.match(secureShareSource, /function secureSharesPage\(\)/);
+assert.match(secureShareSource, /Let recipient choose protected viewing or download/);
+assert.match(secureShareSource, /Protected viewing inside AEGIS/);
+assert.match(secureShareSource, /Secure download to this device/);
+assert.match(secureShareSource, /createSecureShare\(file/);
+assert.match(secureShareSource, /openSecureShare\(pkg,code,mode\)/);
+assert.match(secureShareSource, /share-close-preview/);
+console.log('PASS: secure-share sender UI, recipient-selected view/download flow, sender access restrictions and protected preview wiring.');

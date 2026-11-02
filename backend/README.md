@@ -48,3 +48,23 @@ The backend no longer records its local socket/proxy address as the visitor IP. 
 Rejected registration/authentication proofs and denied authentication attempts are associated with an existing AEGIS identity only when the submitted public key is already present in `aegis_devices`. Unknown public keys remain unassigned; Sentinel does not guess an identity. Event records contain event type, server-observed source metadata, a limited user-agent string and non-secret reason/device metadata. Passwords, private keys, bearer tokens and message contents are not recorded.
 
 The security-event endpoint requires a valid bearer session and returns only events for that session's identity. Revoking a device marks it revoked and deletes all sessions for that device. A revoked session is rejected by subsequent authenticated requests. The current automated tests exercise cryptographic proof and event-attribution contracts; full HTTP/database integration tests still require a dedicated test PostgreSQL database and must be run before production security sign-off.
+
+### v0.6.0 revocation hardening
+A public key already marked revoked cannot be reactivated by registering the same key again. Registration uses an `ON CONFLICT ... WHERE revoked_at IS NULL` condition and returns HTTP 403 when the existing device is revoked. This prevents the previous re-registration path from clearing the revocation marker. A proper account/device recovery workflow is not yet implemented; do not revoke the only device holding the identity until recovery is designed and tested.
+
+Pending one-time challenges are now expired opportunistically and the in-memory challenge map is bounded. This is still process-local and is not a substitute for a shared durable challenge store in a multi-instance deployment.
+
+
+## v0.7.0 frontend integration note
+The frontend now exposes Messenger, Rooms, Media Masking, Vault, VPN & DNS, and Workhub module pages. Except for the local camera preview and its CSS preview filters, these pages are architecture/status surfaces only. No chat, calling, file vault, Workhub sync, or VPN service is active. Backend API remains the v0.6 security foundation with a v0.7 health version label; no new communication endpoints are exposed.
+
+## Conversation retention service (v0.8.1 development milestone)
+The backend now includes authenticated per-identity retention policy routes and ciphertext-only item storage:
+- `PUT /v1/retention/policy` — `{scope:'chats'|'rooms', conversationId, mode:'leave'|'timed', days?}`
+- `POST /v1/retention/items` — stores a base64 ciphertext blob against the authenticated identity and conversation reference.
+- `GET /v1/retention/items?scope=chats&conversationId=...` — retrieves that identity's stored blobs.
+- `POST /v1/retention/leave` — deletes that identity's items when the saved policy is `leave`.
+
+Allowed timed durations are 1, 7, 30, 90 and 180 days. A backend cleanup task removes expired rows once per minute. Database tables are created additively at startup; existing device/session/event tables are not dropped or reset.
+
+**Integration and security boundary:** the frontend retention controls are still local preferences and are not yet wired to these API routes. The messaging and room services are not live. The item endpoint accepts client-encrypted ciphertext but does not implement encryption, key exchange, peer authentication, room membership, multi-device synchronization, or backup deletion. Do not send plaintext to this endpoint or describe this milestone as an end-to-end encrypted messenger. Live PostgreSQL integration tests and a security review remain required.
