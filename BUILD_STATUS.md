@@ -29,3 +29,12 @@ This is a development build, not AEGIS 1.0 and not a security-audited release.
 Not performed: live PostgreSQL integration tests, Render deployment verification, Android SDK/Gradle compilation, WebRTC integration, VPN server connectivity tests, independent cryptographic/security audit, or multi-device end-to-end tests.
 
 Keep the existing Render database and secrets. The new mailbox table is additive. Do not reset the database, replace `DATABASE_URL`, or revoke the current device during testing. Do not use this development build for high-risk communications.
+
+
+## AEGIS v0.9.5 — transport hardening checkpoint
+
+This checkpoint makes one verified backend hardening change: production PostgreSQL TLS now requires certificate verification (`rejectUnauthorized: true`) rather than accepting unverified server certificates. A regression test fails if the unsafe setting is reintroduced. Package versions are updated to 0.9.5.
+
+This does **not** complete or certify AEGIS. The existing product remains a development foundation. Live end-to-end Messenger/Rooms, a reviewed ratcheting protocol, full peer-key verification, production VPN, calling, outgoing media masking, Android release signing, live PostgreSQL/Render integration tests, and independent security assessment remain outstanding. Do not use this build for high-risk communications or describe it as military/government approved.
+
+Before deploying, confirm that the PostgreSQL provider's certificate chain is trusted by the Node.js runtime. If the database uses a private CA, configure that CA explicitly rather than disabling certificate verification. A deployment may fail closed until the correct CA trust is configured; that is intentional.

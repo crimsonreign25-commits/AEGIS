@@ -54,3 +54,8 @@ assert.match(serverSource,/recipient_identity=\$1 AND expires_at>NOW\(\)/);
 assert.match(serverSource,/storage:'ciphertext-only'/);
 assert.match(serverSource,/Encrypt and authenticate messages on client devices before sending/);
 console.log('PASS: authenticated ciphertext mailbox routing, recipient-only retrieval, recipient-scoped deletion and 30-day expiry contract.');
+
+// Production database TLS must verify the server certificate.
+assert.match(serverSource, /NODE_ENV === 'production' \? \{ rejectUnauthorized: true \} : undefined/);
+assert.doesNotMatch(serverSource, /rejectUnauthorized:\s*false/);
+console.log('PASS: production PostgreSQL TLS certificate verification is enabled.');

@@ -169,3 +169,12 @@ Added authenticated mailbox endpoints for encrypted-message transport: `POST /v1
 This is a ciphertext relay only. The server does not see plaintext, but this endpoint does not implement end-to-end key agreement, peer authentication of message contents, group membership, delivery acknowledgements, multi-device synchronization, or a complete Messenger UI. A production messenger must add a reviewed client-side key establishment and message-authentication protocol before treating messages as end-to-end encrypted.
 
 Verification: backend contract tests cover authenticated route guards, recipient-only retrieval/deletion, ciphertext-only storage and the 30-day expiry contract. These are not live PostgreSQL integration tests.
+
+
+## AEGIS v0.9.5 — transport hardening checkpoint
+
+This checkpoint makes one verified backend hardening change: production PostgreSQL TLS now requires certificate verification (`rejectUnauthorized: true`) rather than accepting unverified server certificates. A regression test fails if the unsafe setting is reintroduced. Package versions are updated to 0.9.5.
+
+This does **not** complete or certify AEGIS. The existing product remains a development foundation. Live end-to-end Messenger/Rooms, a reviewed ratcheting protocol, full peer-key verification, production VPN, calling, outgoing media masking, Android release signing, live PostgreSQL/Render integration tests, and independent security assessment remain outstanding. Do not use this build for high-risk communications or describe it as military/government approved.
+
+Before deploying, confirm that the PostgreSQL provider's certificate chain is trusted by the Node.js runtime. If the database uses a private CA, configure that CA explicitly rather than disabling certificate verification. A deployment may fail closed until the correct CA trust is configured; that is intentional.
