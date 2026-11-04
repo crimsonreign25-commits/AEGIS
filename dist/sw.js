@@ -1,5 +1,5 @@
-const CACHE = 'aegis-shell-v092-secure-share';
-const CORE = ['/', '/index.html', '/app.js', '/vault-store.mjs', '/secure-share.mjs', '/src/styles.css', '/manifest.webmanifest', '/public/aegis-icon.svg'];
+const CACHE = 'aegis-shell-v096-message-key-binding';
+const CORE = ['/', '/index.html', '/app.js', '/vault-store.mjs', '/secure-share.mjs', '/message-crypto.mjs', '/src/styles.css', '/manifest.webmanifest', '/public/aegis-icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);

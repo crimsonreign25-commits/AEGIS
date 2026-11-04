@@ -34,7 +34,9 @@ console.log('PASS: PWA manifest, service worker, P-256 key generation, non-extra
 assert.match(js, /navButton\('sentinel','Sentinel','shield'\)/);
 assert.match(js, /function sentinelPage\(/);
 assert.match(js, /register\('\/sw\.js\?v=0\.9\.2'/);
-assert.match(sw, /aegis-shell-v092-secure-share/);
+assert.match(sw, /aegis-shell-v096-message-key-binding/);
+assert.match(sw, /message-crypto\.mjs/);
+assert.match(js, /E2E protocol integration pending/);
 assert.match(sw, /skipWaiting/);
 assert.match(sw, /clients\.claim/);
 assert.match(js, /cannot restore access by simply registering again/);
@@ -43,6 +45,8 @@ console.log('PASS: Sentinel navigation, security-event page and v0.9.0 cache ref
 for (const section of ['messenger','rooms','media','vault','vpn','workhub']) assert.ok(js.includes(`'${section}'`));
 assert.match(js, /camera-preview/);
 assert.match(js, /video-mask/);
+assert.match(js, /EXPERIMENTAL CRYPTO FOUNDATION — NOT LIVE/);
+assert.match(js, /not a production E2EE protocol/);
 console.log('PASS: integrated module navigation and local media privacy preview checks.');
 
 assert.match(js, /function retentionSettings\(scope\)/);
