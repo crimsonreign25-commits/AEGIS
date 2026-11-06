@@ -1,13 +1,13 @@
 {
   "name": "aegis-private-network",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node server.mjs",
     "build": "node build.mjs",
     "preview": "node server.mjs dist",
-    "test": "node test.mjs && node secure-share.test.mjs && node message-crypto.test.mjs",
+    "test": "node test.mjs && node secure-share.test.mjs && node message-crypto.test.mjs && node messenger-transport.test.mjs",
     "test:backend": "npm --prefix backend test",
     "test:all": "npm test && npm run build && npm run test:backend"
   }

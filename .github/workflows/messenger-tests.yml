@@ -8,6 +8,8 @@ on:
       - 'app.js'
       - 'message-crypto.mjs'
       - 'message-crypto.test.mjs'
+      - 'messenger-transport.mjs'
+      - 'messenger-transport.test.mjs'
       - 'secure-share.mjs'
       - 'secure-share.test.mjs'
       - 'test.mjs'

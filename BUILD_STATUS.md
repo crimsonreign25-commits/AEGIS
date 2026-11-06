@@ -47,3 +47,12 @@ Before deploying, confirm that the PostgreSQL provider's certificate chain is tr
 This checkpoint adds a signature over the complete public-key bundle so the identity signing key authenticates both the signing and ECDH agreement public keys. Regression tests reject unsigned bundles and substituted agreement keys. The module remains experimental and is not wired into Messenger; do not describe this as a complete or independently reviewed E2EE protocol.
 
 The production PostgreSQL TLS certificate-verification change from v0.9.5 is retained. Before deployment, verify that the database provider's CA chain is trusted by the Node.js runtime; configure the provider CA explicitly if needed.
+
+## v0.9.7 — Experimental mailbox transport adapter
+- Added `messenger-transport.mjs` to connect the existing signed/encrypted message envelope to authenticated `/v1/messages` mailbox endpoints.
+- Sending encrypts and signs on the client, serializes the envelope, and uploads only base64 ciphertext.
+- Receiving requires a caller-supplied verified peer bundle list and durable replay-store implementation; it verifies/decrypts before recording the message ID and deleting the mailbox item.
+- Added mocked two-identity transport tests for send/receive, decryption, durable replay-store requirement, HTTPS enforcement, and delete-after-success.
+- CI now runs the transport adapter test.
+- **Limitations:** this is an experimental integration adapter, not a complete production Messenger. No reviewed ratcheting protocol, forward secrecy, post-compromise security, prekeys, key transparency, peer discovery, multi-device session lifecycle, durable app storage adapter, or live Render two-device test is included. Do not use for sensitive communications.
+- Local verification: `npm test`, `npm run build`, and `npm run test:backend` passed in the development environment. Live backend/Render integration and independent security review were not performed.
